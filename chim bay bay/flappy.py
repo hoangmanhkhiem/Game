@@ -33,8 +33,7 @@ def welcome_main_screen():
                 pygame.quit()
                 sys.exit()
 
-            # If the user presses space or up key, start the game for them
-            elif event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+            elif event.type == KEYDOWN and event.key in [K_SPACE, K_UP]:
                 return
             else:
                 display_screen_window.blit(game_image['background'], (0, 0))
@@ -81,15 +80,13 @@ def main_gameplay():
             if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
                 pygame.quit()
                 sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+            if event.type == KEYDOWN and event.key in [K_SPACE, K_UP]:
                 if p_y > 0:
                     p_vx = p_flap_accuracy
                     p_flap = True
                     game_audio_sound['wing'].play()
 
-        cr_tst = is_Colliding(p_x, p_y, up_pips,
-                              low_pips)
-        if cr_tst:
+        if cr_tst := is_Colliding(p_x, p_y, up_pips, low_pips):
             return
 
 
@@ -134,9 +131,7 @@ def main_gameplay():
         display_screen_window.blit(game_image['base'], (b_x, play_ground))
         display_screen_window.blit(game_image['player'], (p_x, p_y))
         d = [int(x) for x in list(str(score))]
-        w = 0
-        for digit in d:
-            w += game_image['numbers'][digit].get_width()
+        w = sum(game_image['numbers'][digit].get_width() for digit in d)
         Xoffset = (scr_width - w) / 2
 
         for digit in d:
@@ -175,11 +170,10 @@ def get_Random_Pipes():
     yes2 = off_s + random.randrange(0, int(scr_height - game_image['base'].get_height() - 1.2 * off_s))
     pipeX = scr_width + 10
     y1 = pip_h - yes2 + off_s
-    pipe = [
+    return [
         {'x': pipeX, 'y': -y1},  # upper Pipe
-        {'x': pipeX, 'y': yes2}  # lower Pipe
+        {'x': pipeX, 'y': yes2},  # lower Pipe
     ]
-    return pipe
 
 
 if __name__ == "__main__":

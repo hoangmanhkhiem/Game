@@ -97,18 +97,18 @@ def gameover_display_message(rbtn_image, gmo_image):
     screen_layout_display.blit(gmo_image, gmo_rect)
 
 def extractDigits(num):
-    if num > -1:
-        d = []
-        i = 0
-        while(num / 10 != 0):
-            d.append(num % 10)
-            num = int(num / 10)
-
+    if num <= -1:
+        return
+    d = []
+    i = 0
+    while num != 0:
         d.append(num % 10)
-        for i in range(len(d),5):
-            d.append(0)
-        d.reverse()
-        return d
+        num = int(num / 10)
+
+    d.append(num % 10)
+    d.extend(0 for _ in range(len(d),5))
+    d.reverse()
+    return d
 
 class Dino():
     def __init__(self, sx=-1, sy=-1):
@@ -145,19 +145,18 @@ class Dino():
         if self.jumping:
             self.index = 0
         elif self.blinking:
-            if self.index == 0:
-                if self.counter % 400 == 399:
-                    self.index = (self.index + 1)%2
-            else:
-                if self.counter % 20 == 19:
-                    self.index = (self.index + 1)%2
-
+            if (
+                self.index == 0
+                and self.counter % 400 == 399
+                or self.index != 0
+                and self.counter % 20 == 19
+            ):
+                self.index = (self.index + 1)%2
         elif self.ducking:
             if self.counter % 5 == 0:
                 self.index = (self.index + 1)%2
-        else:
-            if self.counter % 5 == 0:
-                self.index = (self.index + 1)%2 + 2
+        elif self.counter % 5 == 0:
+            self.index = (self.index + 1)%2 + 2
 
         if self.dead:
            self.index = 4
@@ -174,8 +173,8 @@ class Dino():
 
         if not self.dead and self.counter % 7 == 6 and self.blinking == False:
             self.score += 1
-            if self.score % 100 == 0 and self.score != 0:
-                if pygame.mixer.get_init() != None:
+            if pygame.mixer.get_init() != None:
+                if self.score % 100 == 0 and self.score != 0:
                     checkPoint_sound.play()
 
         self.counter = (self.counter + 1)
@@ -269,14 +268,8 @@ class Scoreboard():
         self.scre_img, self.screrect = load_sprite_sheet('numbers.png', 12, 1, 11, int(11 * 6 / 5), -1)
         self.image = pygame.Surface((55,int(11*6/5)))
         self.rect = self.image.get_rect()
-        if x == -1:
-            self.rect.left = width_screen * 0.89
-        else:
-            self.rect.left = x
-        if y == -1:
-            self.rect.top = height_screen * 0.1
-        else:
-            self.rect.top = y
+        self.rect.left = width_screen * 0.89 if x == -1 else x
+        self.rect.top = height_screen * 0.1 if y == -1 else y
 
     def draw(self):
         screen_layout_display.blit(self.image, self.rect)
@@ -303,7 +296,7 @@ def introduction_screen():
     l_rect.centerx = width_screen * 0.6
     l_rect.centery = height_screen * 0.6
     while not starting_game:
-        if pygame.display.get_surface() == None:
+        if pygame.display.get_surface() is None:
             print("Couldn't load display surface")
             return True
         else:
@@ -311,7 +304,7 @@ def introduction_screen():
                 if event.type == pygame.QUIT:
                     return True
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
+                    if event.key in [pygame.K_SPACE, pygame.K_UP]:
                         ado_dino.jumping = True
                         ado_dino.blinking = False
                         ado_dino.movement[1] = -1*ado_dino.jumpSpeed
